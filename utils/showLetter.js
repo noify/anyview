@@ -1,5 +1,5 @@
 var exec = require('child_process').exec;
-showLetter(e => console.log(e))
+
 // show  Windows letter, to compatible Windows xp
 
 function showLetter(callback) {
@@ -19,3 +19,5 @@ function showLetter(callback) {
         callback(list);
     });
 }
+
+exports.showLetter = showLetter

@@ -1,12 +1,64 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-cmn-Hans">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>Document</title>
+  <title>Anyview</title>
 </head>
 <body>
-  <h1>anyview</h1>
+<script>
+var frag = document.createDocumentFragment();
+var header = document.createElement('header');
+var title = document.createElement('div');
+var main = document.createElement('div');
+title.textContent = 'Anyview'
+header.appendChild(title)
+frag.appendChild(header)
+frag.appendChild(main)
+document.body.appendChild(frag)
+ajax('/getfiles', function (data) {
+  var mUl = document.createElement('ul')
+  mUl.dataset.backpath = ''
+  data.forEach(function (e){
+    var mLi = document.createElement('li')
+    mLi.textContent = e
+    mLi.dataset.path = e + ':\\'
+    mUl.appendChild(mLi)
+  })
+  mUl.onclick = function (e) {
+    if(e.target.tagName=="LI"){
+      ajax('/getfiles?path=' + e.target.dataset.path, function (data){
+        mUl.innerHTML = ''
+        data.forEach(function (e){
+          var mLi = document.createElement('li')
+          mLi.textContent = e
+          mLi.dataset.path = e
+          mUl.appendChild(mLi)
+        })
+      })
+    }
+  }
+  main.appendChild(mUl)
+})
+function ajax(url, callback){
+  var request = new XMLHttpRequest();
+  request.open('GET', url, true);
+  request.onload = function() {
+    if (request.status >= 200 && request.status < 400) {
+      // Success!
+      var data = JSON.parse(request.responseText);
+      callback(data)
+    } else {
+      // We reached our target server, but it returned an error
+
+    }
+  };
+  request.onerror = function() {
+    // There was a connection error of some sort
+  };
+  request.send();
+}
+</script>
 </body>
 </html>
