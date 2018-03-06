@@ -13,6 +13,8 @@ http.createServer(function (request, response) {
         break;
       case '/getfiles': getfiles(request, response, _url)
         break;
+      case '/getfile': getfile(request, response, _url)
+        break;
       default: ;
     }
 }).listen(8888);
@@ -36,6 +38,13 @@ function getfiles (request, response, _url) {
       response.end(JSON.stringify(list));
     })
   }
+}
+function getfile (request, response, _url) {
+  var path = _url.query.path;
+  response.writeHead(200, {"Content-Type": "image/jpeg"});
+  fs.readFile(path, function (err,data){
+    response.end(data);
+});
 }
 console.log('Server running at http://127.0.0.1:8888/');
 
