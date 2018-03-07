@@ -201,7 +201,7 @@
       background: #77777777;
       z-index: 100;
     }
-    .video{
+    .wrap > *{
       position: absolute;
       top: 0px;
       bottom: 0px;
@@ -308,15 +308,18 @@ mUl.onclick = function (e) {
     ( hasClass(_target, 'png') ||
       hasClass(_target, 'jpg') ||
       hasClass(_target, 'gif'))){
-      window.open( _target.src)
+      var img = new Image()
+      img.src = _target.src
+      wrap.appendChild(img)
+      wrap.style.display = 'block'
   } else if(hasClass(_target, 'mp4')) {
     var video = document.createElement('video')
     addClass(video, 'video')
     video.src = '/getfiles?path=' + _target.dataset.path
     video.controls = true
     video.autoplay = true
-    wrap.style.display = 'block'
     wrap.appendChild(video)
+    wrap.style.display = 'block'
   }
 }
 
