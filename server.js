@@ -74,19 +74,22 @@ console.log('Server running at http://127.0.0.1:8888/');
  */  
 function fileDisplay(req, res, filePath, callback) {
   fs.stat(filePath, function(eror, stats){
-    if(eror){  
+    if(eror){
       callback({code: 500, text: '获取文件stats失败'});  
     }else{  
         var isFile = stats.isFile();//是文件  
         var isDir = stats.isDirectory();//是文件夹  
-        if
-        (isFile){
+        if(isFile){
           getfile(req, res, filePath) 
         }
         if(isDir){
           //根据文件路径读取文件，返回文件列表  
           fs.readdir(filePath, (err, files) => {
             var list = []
+            if(typeof files === 'undefined'){
+              callback({code: 500, text: '获取文件夹失败'});
+              return
+            }
             files.forEach(function(filename){
               var pathname = path.join(filePath, filename)
               try{

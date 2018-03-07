@@ -5,8 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <style>
+    html {
+    overflow-y: scroll;
+    }
+
+    :root {
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    :root body {
+      position: absolute;
+    }
+
+    body {
+      width: 100vw;
+      overflow: hidden;
+    }
     html, body{
-      height: 100%;
+      margin: 0px;
     }
     body, button, input, select, textarea {
       font: 14px/1.5 -apple-system,BlinkSystemFont,"Segoe UI",Roboto,Ubuntu,"Helvetica Neue",Helevetica,Arial,"PingFang SC","Hiragino Sans GB","Microsoft YaHei UI","Microsoft YaHei","Source Han Sans CN",sans-serif;
@@ -14,7 +31,7 @@
       color: #020202;
       outline: 0;
     }
-    .nav{
+    header{
       width: 100%;
       position: fixed;
       left: 0px;
@@ -24,45 +41,51 @@
       background: #F5F8FA;
       box-sizing: border-box;
     }
+    .nav{
+      float: left;
+    }
     .nav span{
       padding: 4px 5px;
       color: #777;
       cursor: pointer;
     }
-    .nav .comic{
+    header .comic{
       float: right;
       padding: 4px 5px;
       color: #cccc;
       cursor: pointer;
     }
-    .nav .comic.active{
+    header .comic.active{
       color: #222;
     }
     .main{
-      height: 100%;
+      min-height: 100%;
       width: 100%;
       padding-top: 60px;
       padding-bottom: 20px;
+      box-sizing: border-box;
     }
     .main.comic .item{
+      float: left;
       display: none;
     }
     .main.comic .item.imgItem{
+      float: right;
       display: block;
       width: 100%;
       height: auto;
       padding: 0;
     }
-    .main.comic .item .inner{
+    .main.comic .item.imgItem .inner{
       padding: 0px;
     }
-    .main.comic .item .inner:hover{
+    .main.comic .item.imgItem .inner:hover{
       background: initial;
     }
-    .main.comic .item .icon-wrapper{
+    .main.comic .item.imgItem .icon-wrapper{
       padding: 0;
     }
-    .main.comic .item img.icon{
+    .main.comic .item.imgItem img.icon{
       width: auto;
       height: auto;
       max-width: 980px;
@@ -74,7 +97,7 @@
       margin: 0px auto;
       cursor: inherit;
     }
-    .main.comic .item .txt{
+    .main.comic .item.imgItem .text{
       display: none;
     }
     .clearfix:after {
@@ -144,10 +167,14 @@
     .icon.js, .icon.css, .icon.json, .icon.html {
       background-image: url(/images/icon-code-l.svg);
     }
-    img.icon {
-      object-fit: cover; 
+    .icon.mp4 {
+      background-image: url(/images/icon-video-l.svg);
     }
-    .item .txt {
+    img.icon {
+      object-fit: cover;
+      background-image: none; 
+    }
+    .item .text {
       display: inline-block;
       display: -webkit-box;
       overflow: hidden;
@@ -164,7 +191,25 @@
       -webkit-box-orient: vertical;
       max-height: 41px;
     }
-    
+    .wrap{
+      display: none;
+      position: fixed;
+      height: 100%;
+      width: 100%;
+      top: 0px;
+      left: 0px;
+      background: #77777777;
+      z-index: 100;
+    }
+    .video{
+      position: absolute;
+      top: 0px;
+      bottom: 0px;
+      left: 0px;
+      right: 0px;
+      margin: auto;
+      max-width: 80%; 
+    }
   </style>
   <title>Anyview</title>
 </head>
@@ -177,7 +222,9 @@ var main = document.createElement('div');
 var mUl = document.createElement('ul');
 var navBase = document.createElement('span');
 var comic = document.createElement('b');
+var wrap = document.createElement('div');
 
+addClass(wrap, 'wrap')
 addClass(main, 'main')
 
 comic.textContent = '漫'
@@ -188,16 +235,38 @@ navBase.dataset.path = ''
 
 addClass(mUl, 'item-list clearfix')
 
-addClass(nav, 'nav')
-nav.appendChild(comic)
+addClass(nav, 'nav clearfix')
 nav.appendChild(navBase)
+header.appendChild(nav)
+header.appendChild(comic)
 main.appendChild(mUl)
 frag.appendChild(header)
-frag.appendChild(nav)
 frag.appendChild(main)
+frag.appendChild(wrap)
 document.body.appendChild(frag)
 
-nav.onclick = function (e) {
+
+var navList = typeof localStorage.navList !== 'undefined' ? JSON.parse(localStorage.navList) : []
+
+navList.forEach(e =>{
+  var navSpan = document.createElement('span')
+  navSpan.textContent = e.text
+  navSpan.dataset.path = e.path
+  nav.appendChild(navSpan)
+})
+
+getfiles(navList.length === 0 ? '' : navList[navList.length - 1].path)
+
+wrap.onclick = function (e){
+  var _target = e.target
+  if(hasClass(_target, 'wrap')){
+    wrap.style.display = 'none'
+    while(wrap.hasChildNodes()) {  
+      wrap.removeChild(wrap.firstChild);
+    }
+  }
+}
+header.onclick = function (e) {
   var _target = e.target
   if(_target.tagName=="SPAN"){
     getfiles(e.target.dataset.path)
@@ -207,6 +276,8 @@ nav.onclick = function (e) {
     while(nav.hasChildNodes()) {
       if(nav.lastChild !== _target){
         nav.removeChild(nav.lastChild);
+        navList.pop()
+        localStorage.navList = JSON.stringify(navList)
       } else {
         return
       }
@@ -225,10 +296,29 @@ mUl.onclick = function (e) {
   var _target = e.target
   if(hasClass(_target, 'dir')){
     getfiles(_target.dataset.path)
+    //       
+  } else if(
+    hasClass(_target, 'mp3') ||
+    hasClass(_target, 'txt') ||
+    hasClass(_target, 'html')||
+    hasClass(_target, 'htm')){
+      window.open('/getfiles?path=' + _target.dataset.path)
+  } else if (
+    !hasClass(main, 'comic') &&
+    ( hasClass(_target, 'png') ||
+      hasClass(_target, 'jpg') ||
+      hasClass(_target, 'gif'))){
+      window.open( _target.src)
+  } else if(hasClass(_target, 'mp4')) {
+    var video = document.createElement('video')
+    addClass(video, 'video')
+    video.src = '/getfiles?path=' + _target.dataset.path
+    video.controls = true
+    video.autoplay = true
+    wrap.style.display = 'block'
+    wrap.appendChild(video)
   }
 }
-
-getfiles()
 
 function getfiles(path) {
   path = typeof path === 'undefined' ? '' : path
@@ -241,22 +331,29 @@ function getfiles(path) {
       pathname = path.split('\\')
       navSpan.textContent = pathname[pathname.length - 1]
       navSpan.dataset.path = path
+      navList.push({
+        text: pathname[pathname.length - 1],
+        path: path
+      })
+      localStorage.navList = JSON.stringify(navList)
       nav.appendChild(navSpan)
     }
+    var imgItemNum = 0
     data.forEach(function (e){
       var mLi = document.createElement('li')
       var inner = document.createElement('div')
       var iconWrapper = document.createElement('i')
-      var txt = document.createElement('span')
+      var text = document.createElement('span')
       addClass(mLi, 'item')
       addClass(iconWrapper, 'icon-wrapper')
       addClass(inner, 'inner')
-      addClass(txt, 'txt')
-      txt.textContent = e.filename
+      addClass(text, 'text')
+      text.textContent = e.filename
       mLi.appendChild(inner)
       inner.appendChild(iconWrapper)
-      inner.appendChild(txt)
-      if(e.extname === 'jpg' || e.extname === 'png' ){
+      inner.appendChild(text)
+      if(e.extname === 'jpg' || e.extname === 'png'|| e.extname === 'gif' ){
+        imgItemNum++
         addClass(mLi, 'imgItem')
         var icon = new Image()
         icon.src = '/getfiles?path=' + e.pathname
@@ -268,6 +365,10 @@ function getfiles(path) {
       iconWrapper.appendChild(icon)
       mUl.appendChild(mLi)
     })
+    if(imgItemNum > 100){
+      addClass(comic, 'active')
+      addClass(main, 'comic')
+    }
   })
 }
 
@@ -278,6 +379,10 @@ function ajax(url, callback){
     if (request.status >= 200 && request.status < 400) {
       // Success!
       var data = JSON.parse(request.responseText);
+      if(data.code === 500){
+        alert(data.text)
+        return
+      }
       callback(data)
     } else {
       // We reached our target server, but it returned an error
