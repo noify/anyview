@@ -4,43 +4,273 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <style>
+    html, body{
+      height: 100%;
+    }
+    body, button, input, select, textarea {
+      font: 14px/1.5 -apple-system,BlinkSystemFont,"Segoe UI",Roboto,Ubuntu,"Helvetica Neue",Helevetica,Arial,"PingFang SC","Hiragino Sans GB","Microsoft YaHei UI","Microsoft YaHei","Source Han Sans CN",sans-serif;
+      -webkit-font-smoothing: subpixel-antialiased;
+      color: #020202;
+      outline: 0;
+    }
+    .nav{
+      width: 100%;
+      position: fixed;
+      left: 0px;
+      top: 0px;
+      padding: 10px;
+      z-index: 99;
+      background: #F5F8FA;
+      box-sizing: border-box;
+    }
+    .nav span{
+      padding: 4px 5px;
+      color: #777;
+      cursor: pointer;
+    }
+    .nav .comic{
+      float: right;
+      padding: 4px 5px;
+      color: #cccc;
+      cursor: pointer;
+    }
+    .nav .comic.active{
+      color: #222;
+    }
+    .main{
+      height: 100%;
+      width: 100%;
+      padding-top: 60px;
+      padding-bottom: 20px;
+    }
+    .main.comic .item{
+      display: none;
+    }
+    .main.comic .item.imgItem{
+      display: block;
+      width: 100%;
+      height: auto;
+      padding: 0;
+    }
+    .main.comic .item .inner{
+      padding: 0px;
+    }
+    .main.comic .item .inner:hover{
+      background: initial;
+    }
+    .main.comic .item .icon-wrapper{
+      padding: 0;
+    }
+    .main.comic .item img.icon{
+      width: auto;
+      height: auto;
+      max-width: 980px;
+      position: relative;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      margin: 0px auto;
+      cursor: inherit;
+    }
+    .main.comic .item .txt{
+      display: none;
+    }
+    .clearfix:after {
+      content: "";
+      display: block;
+      clear: both;
+    }
+    .item-list{
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      outline: 0;
+    }
+    .item{
+      position: relative;
+      float: left;
+      width: 100px;
+      height: 150px;
+      box-sizing: border-box;
+      text-align: center;
+      cursor: pointer;
+      z-index: 3;
+      padding-bottom: 16px;
+      display: block;
+    }
+    .item .inner {
+      position: relative;
+      z-index: 3;
+      display: block;
+      padding-bottom: 16px;
+      cursor: default;
+    }
+    .item .inner:hover{
+      background-color: #F5F8FA;
+    }
+    .item .icon-wrapper {
+      display: block;
+      position: relative;
+      z-index: 0;
+      width: 100%;
+      padding-top: 80%;
+    }
+    .icon {
+      position: absolute;
+      width: 56px;
+      height: 56px;
+      top: 50%;
+      left: 50%;
+      margin: -28px 0 0 -28px;
+      cursor: pointer;
+      font-size: 0;
+      overflow: hidden;
+      -webkit-text-size-adjust: none;
+      display: inline-block;
+      vertical-align: middle;
+      background-size: 56px 56px;
+      background-origin: center center;
+      background-repeat: no-repeat;
+      background-image: url(/images/icon-nor-l.svg);
+    }
+    .icon.dir {
+      background-image: url(/images/icon-file-l.svg);
+    }
+    .icon.zip {
+      background-image: url(/images/icon-zip-l.svg);
+    }
+    .icon.js, .icon.css, .icon.json, .icon.html {
+      background-image: url(/images/icon-code-l.svg);
+    }
+    img.icon {
+      object-fit: cover; 
+    }
+    .item .txt {
+      display: inline-block;
+      display: -webkit-box;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 84%;
+      margin: 0 auto;
+      font-size: 14px;
+      line-height: 20px;
+      display: inline-block\9;
+      white-space: nowrap\9;
+      cursor: pointer;
+      word-wrap: break-word;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      max-height: 41px;
+    }
+    
+  </style>
   <title>Anyview</title>
 </head>
 <body>
 <script>
 var frag = document.createDocumentFragment();
 var header = document.createElement('header');
-var title = document.createElement('div');
+var nav = document.createElement('div');
 var main = document.createElement('div');
-title.textContent = 'Anyview'
-header.appendChild(title)
+var mUl = document.createElement('ul');
+var navBase = document.createElement('span');
+var comic = document.createElement('b');
+
+addClass(main, 'main')
+
+comic.textContent = '漫'
+addClass(comic, 'comic')
+
+navBase.textContent = 'Anyview'
+navBase.dataset.path = ''
+
+addClass(mUl, 'item-list clearfix')
+
+addClass(nav, 'nav')
+nav.appendChild(comic)
+nav.appendChild(navBase)
+main.appendChild(mUl)
 frag.appendChild(header)
+frag.appendChild(nav)
 frag.appendChild(main)
 document.body.appendChild(frag)
-ajax('/getfiles', function (data) {
-  var mUl = document.createElement('ul')
-  mUl.dataset.backpath = ''
-  data.forEach(function (e){
-    var mLi = document.createElement('li')
-    mLi.textContent = e
-    mLi.dataset.path = e + ':\\'
-    mUl.appendChild(mLi)
-  })
-  mUl.onclick = function (e) {
-    if(e.target.tagName=="LI"){
-      ajax('/getfiles?path=' + e.target.dataset.path, function (data){
-        mUl.innerHTML = ''
-        data.forEach(function (e){
-          var mLi = document.createElement('li')
-          mLi.textContent = e
-          mLi.dataset.path = e
-          mUl.appendChild(mLi)
-        })
-      })
+
+nav.onclick = function (e) {
+  var _target = e.target
+  if(_target.tagName=="SPAN"){
+    getfiles(e.target.dataset.path)
+    // 退出漫画模式
+    removeClass(comic, 'active')
+    removeClass(main, 'comic')
+    while(nav.hasChildNodes()) {
+      if(nav.lastChild !== _target){
+        nav.removeChild(nav.lastChild);
+      } else {
+        return
+      }
+    }
+  } else if(hasClass(_target, 'comic')) {
+    if(hasClass(_target, 'active')){
+      removeClass(_target, 'active')
+      removeClass(main, 'comic')
+    } else {
+      addClass(_target, 'active')
+      addClass(main, 'comic')
     }
   }
-  main.appendChild(mUl)
-})
+}
+mUl.onclick = function (e) {
+  var _target = e.target
+  if(hasClass(_target, 'dir')){
+    getfiles(_target.dataset.path)
+  }
+}
+
+getfiles()
+
+function getfiles(path) {
+  path = typeof path === 'undefined' ? '' : path
+  ajax('/getfiles?path=' + path, function (data){
+    while(mUl.hasChildNodes()) {  
+      mUl.removeChild(mUl.firstChild);
+    }
+    if(nav.lastChild.dataset.path !== path){
+      var navSpan = document.createElement('span')
+      pathname = path.split('\\')
+      navSpan.textContent = pathname[pathname.length - 1]
+      navSpan.dataset.path = path
+      nav.appendChild(navSpan)
+    }
+    data.forEach(function (e){
+      var mLi = document.createElement('li')
+      var inner = document.createElement('div')
+      var iconWrapper = document.createElement('i')
+      var txt = document.createElement('span')
+      addClass(mLi, 'item')
+      addClass(iconWrapper, 'icon-wrapper')
+      addClass(inner, 'inner')
+      addClass(txt, 'txt')
+      txt.textContent = e.filename
+      mLi.appendChild(inner)
+      inner.appendChild(iconWrapper)
+      inner.appendChild(txt)
+      if(e.extname === 'jpg' || e.extname === 'png' ){
+        addClass(mLi, 'imgItem')
+        var icon = new Image()
+        icon.src = '/getfiles?path=' + e.pathname
+      } else{
+        var icon = document.createElement('i')
+        icon.dataset.path = e.pathname
+      }
+      addClass(icon, 'icon ' + e.extname)
+      iconWrapper.appendChild(icon)
+      mUl.appendChild(mLi)
+    })
+  })
+}
+
 function ajax(url, callback){
   var request = new XMLHttpRequest();
   request.open('GET', url, true);
@@ -59,6 +289,66 @@ function ajax(url, callback){
   };
   request.send();
 }
+
+// class
+
+function trim(string) {
+  return (string || '').replace(/^[\s\uFEFF]+|[\s\uFEFF]+$/g, '');
+};
+
+function hasClass(el, cls) {
+  if (!el || !cls) return false;
+  if (cls.indexOf(' ') != -1) throw new Error('className should not contain space.');
+  if (el.classList) {
+    return el.classList.contains(cls);
+  } else {
+    return (' ' + el.className + ' ').indexOf(' ' + cls + ' ') > -1;
+  }
+};
+
+function addClass(el, cls) {
+  if (!el) return;
+  var curClass = el.className;
+  var classes = (cls || '').split(' ');
+
+  for (var i = 0, j = classes.length; i < j; i++) {
+    var clsName = classes[i];
+    if (!clsName) continue;
+
+    if (el.classList) {
+      el.classList.add(clsName);
+    } else {
+      if (!hasClass(el, clsName)) {
+        curClass += ' ' + clsName;
+      }
+    }
+  }
+  if (!el.classList) {
+    el.className = curClass;
+  }
+};
+
+function removeClass(el, cls) {
+  if (!el || !cls) return;
+  var classes = cls.split(' ');
+  var curClass = ' ' + el.className + ' ';
+
+  for (var i = 0, j = classes.length; i < j; i++) {
+    var clsName = classes[i];
+    if (!clsName) continue;
+
+    if (el.classList) {
+      el.classList.remove(clsName);
+    } else {
+      if (hasClass(el, clsName)) {
+        curClass = curClass.replace(' ' + clsName + ' ', ' ');
+      }
+    }
+  }
+  if (!el.classList) {
+    el.className = trim(curClass);
+  }
+};
 </script>
 </body>
 </html>
