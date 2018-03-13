@@ -4,6 +4,7 @@ var util = require('util');
 var fs = require("fs");
 var path = require('path');
 var exec = require('child_process').exec;
+var Jimp = require("jimp");
 
 var mime = {
   '.html': 'text/html,charset=utf-8',
@@ -55,11 +56,27 @@ function getfiles (req, res, _url) {
 function getfile (req, res, pathname) {
   fs.exists(pathname, function(exists){
     if(exists){
-      _mime = mime[path.extname(pathname)]
+      var extname = path.extname(pathname)
+      var thumb = "thumb\\" + pathname.replace(":","")
+      var _mime = mime[extname]
       res.writeHead(200, {"Content-Type": typeof _mime === 'undefined' ? mime['.txt'] : _mime});
-      fs.readFile(pathname, function (err, data){
+      if(extname == '.jpg' || extname == '.gif' || extname == '.png'){
+        if(isFileExists(thumb)){
+          fs.readFile(thumb, function (err, data){
+            res.end(data);
+          });
+        } else {
+          imgResize(pathname, Jimp.AUTO, 240, thumb).then(function(){
+            fs.readFile(thumb, function (err, data){
+              res.end(data);
+            });
+          })
+        }
+      } else {
+        fs.readFile(pathname, function (err, data){
           res.end(data);
-      });
+        });
+      }
     } else {
         res.writeHead(404, {"Content-Type": "application/json;charset=utf-8"});
         res.end("{code:404,text:'未找到该文件'}");
@@ -136,4 +153,22 @@ function showLetter(callback) {
       })
       callback(list);
   });
+}
+function imgResize(f,w,h,t){
+    return Jimp.read(f).then(function (lenna) {
+        return lenna.resize(w, h)     // resize
+            .quality(60)                 // set JPEG quality
+            .write(t); // save
+    }).catch(function (err) {
+        console.error(err);
+    });
+}
+function isFileExists(filePath){
+  var bool = !0;
+  try{
+    fs.accessSync(filePath,fs.constants.F_OK);
+  }catch(err){
+    bool = !1;
+  }
+  return bool;
 }
