@@ -5,7 +5,7 @@ var fs = require("fs");
 var path = require('path');
 var exec = require('child_process').exec;
 
-var contentType = {
+var mime = {
   '.html': 'text/html,charset=utf-8',
   '.htm': 'text/html,charset=utf-8',
   '.js': 'text/javascript,charset=utf-8',
@@ -55,8 +55,8 @@ function getfiles (req, res, _url) {
 function getfile (req, res, pathname) {
   fs.exists(pathname, function(exists){
     if(exists){
-      _contentType = contentType[path.extname(pathname)]
-      res.writeHead(200, {"Content-Type": typeof _contentType === 'undefined' ? contentType['.txt'] : _contentType});
+      _mime = mime[path.extname(pathname)]
+      res.writeHead(200, {"Content-Type": typeof _mime === 'undefined' ? mime['.txt'] : _mime});
       fs.readFile(pathname, function (err, data){
           res.end(data);
       });
